@@ -1,3 +1,4 @@
+import axios from "axios";
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 import { fetchPhotosByQuery } from './js/pixabay-api.js';
@@ -6,10 +7,14 @@ import { clearGallery, showLoader, hideLoader, showNoResults, hideNoResults, ren
 let currentPage = 1;
 let currentQuery = '';
 
-document.getElementById('search-form').addEventListener('submit', async (event) => {
+const searchForm = document.getElementById('search-form');
+const loadMoreBtn = document.getElementById('load-more');
+const searchInput = document.getElementById('search-input');
+
+searchForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
-  currentQuery = document.getElementById('search-input').value.trim();
+  currentQuery = searchInput.value.trim();
 
   if (currentQuery === '') {
     iziToast.error({
@@ -32,7 +37,10 @@ document.getElementById('search-form').addEventListener('submit', async (event) 
       showNoResults();
     } else {
       renderImages(imagesData.hits);
-      showLoadMoreButton();
+
+      if (imagesData.hits.length === 15) {
+        showLoadMoreButton();
+      }
     }
   } catch (error) {
     iziToast.error({
@@ -44,7 +52,7 @@ document.getElementById('search-form').addEventListener('submit', async (event) 
   }
 });
 
-document.getElementById('load-more').addEventListener('click', async () => {
+loadMoreBtn.addEventListener('click', async () => {
   currentPage += 1;
   showLoader();
 
@@ -60,6 +68,10 @@ document.getElementById('load-more').addEventListener('click', async () => {
     } else {
       renderImages(imagesData.hits);
       smoothScroll();
+      
+      if (imagesData.hits.length < 15) {
+        hideLoadMoreButton();
+      }
     }
   } catch (error) {
     iziToast.error({
